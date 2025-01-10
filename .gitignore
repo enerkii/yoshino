@@ -1,0 +1,39 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Environment files
+.env
+.venv/
+*.env
+*.venv
+*.virtualenv
+Pipfile.lock
+poetry.lock
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs and other runtime files
+*.log
+*.out
+*.pid
+*.gz
+*.sqlite3
+
+# Streamlit-specific files
+.streamlit/
+**/streamlit/secrets.toml  # Secrets for deployment (add this only if you use Streamlit secrets)
+
+# Compiled files
+*.pyc
+
+# VS Code settings
+.vscode/
