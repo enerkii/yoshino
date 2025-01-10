@@ -29,7 +29,6 @@ Thumbs.db
 *.sqlite3
 
 # Streamlit-specific files
-.streamlit/
 **/streamlit/secrets.toml  # Secrets for deployment (add this only if you use Streamlit secrets)
 
 # Compiled files
