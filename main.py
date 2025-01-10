@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import csv
+import plotly.graph_objects as go
 from app import calculate
 import hmac
 
@@ -364,3 +365,52 @@ if st.button("Start Simulation", type="primary"):
     st.bar_chart(df.set_index('Capacity')['Additional Profit'], color='#FEC240')
 
     st.markdown("**Customer Impact**")
+    # Total cost per  battery capacity
+
+
+    total_costs = []
+    for entry in range(len(data)):
+        costs = data[entry]['financial']['totalCost']
+        total_costs.append(costs)
+
+    def create_cost_dataframe(total_costs, capacity_values):
+        df = pd.DataFrame(total_costs)
+        df['Capacity'] = capacity_values
+        return df
+
+    df = create_cost_dataframe(total_costs, capacity_values)
+
+    fig = go.Figure()
+
+    # Farben für die verschiedenen Kostenkomponenten
+    colors = {
+        'OFEE': '#FFA07A',  # Salmon
+        'GFee': '#98FB98',  # Pale Green
+        'Grid': '#87CEEB',  # Sky Blue
+        'PPA': '#DDA0DD'    # Plum
+    }
+
+    # Gestapelte Balken hinzufügen
+    for component in ['OFEE', 'GFee', 'Grid', 'PPA']:
+        fig.add_trace(go.Bar(
+            name=component,
+            x=df['Capacity'],
+            y=df[component],
+            marker_color=colors[component]
+        ))
+
+    # Layout anpassen
+    fig.update_layout(
+        barmode='stack',
+        xaxis_title='Batteriekapazität (kWh)',
+        yaxis_title='Kosten (€)',
+        legend_title='Kostenkomponenten',
+        hovermode='x',
+        showlegend=True
+    )
+
+    # X-Achse anpassen
+    fig.update_xaxes(ticktext=capacity_values, tickvals=capacity_values)
+
+    # Plot in Streamlit anzeigen
+    st.plotly_chart(fig, use_container_width=True)

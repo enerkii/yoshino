@@ -115,34 +115,37 @@ def calculate(parameters, solaredgeData):
 
         peakPriceSavings = max(0, oldPowerPrice - newPowerPrice)
 
-
         # financial
         lostRevenue = (optimizedDF['conversionLoss'].sum() + optimizedDF['batteryOwnConsumption'].sum()) * parameters['power_prices']['feed_in_price']
         newPpaRevenue = optimizedDF['batteryOwnConsumption'].sum() * parameters['power_prices']['ppa_price']
 
-        """
-        selfConsumption = optimizedDF['directOwnConsumption'].sum() + optimizedDF['batteryOwnConsumption'].sum()
-        gridConsumption = optimizedDF['consumption'] - selfConsumption
         if newHours >= 2500:
             consumptionPrice = parameters['grid_fees']['above_2500']['consumption_price']
         else:
             consumptionPrice = parameters['grid_fees']['below_2500']['consumption_price']
 
-
-        ppaCost =  selfConsumption * parameters['power_prices']['ppa_price']
-        gridCost = gridConsumption
-        gridFee = newPowerPrice + (selfConsumption * consumptionPrice)
-        otherFee = gridConsumption * parameters['grid_fees']['below_2500']['other_fees']
+        ppaCost =  totalOwnConsumption.sum() * parameters['power_prices']['ppa_price']
+        gridCost = directOwnConsumption.sum() * parameters['power_prices']['net_power_price']
+        gridFee = newPowerPrice + (totalOwnConsumption.sum() * consumptionPrice)
+        otherFee = directOwnConsumption.sum() * parameters['grid_fees']['below_2500']['other_fees']
 
         totalCost = ppaCost + gridCost + gridFee + otherFee
-        """
+
+        allCosts = {
+            "PPA": ppaCost,
+            "Grid": gridCost,
+            "GFee": gridFee,
+            "OFEE": otherFee,
+            "TFE": totalCost
+        }
+
 
         financial = {
             "annualInterest": annualCost,
             "lostRevenue": lostRevenue,
             "newPpaRevenue": newPpaRevenue,
-            "peakPriceSavings": peakPriceSavings
-            #"totalCost": totalCost
+            "peakPriceSavings": peakPriceSavings,
+            "totalCost": allCosts
         }
 
         # power metrics
