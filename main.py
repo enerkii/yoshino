@@ -272,20 +272,21 @@ if st.button("Start Simulation", type="primary"):
     }
 
     try:
-        data = calculate(parameters, solaredgeData)
+        data, load_profile = calculate(parameters, solaredgeData)
     except NameError:
         st.info("Please upload a valid csv file and try again.")
         st.stop()
 
     #### Visualisierung Eigenverbrauchsoptimierung auf Battery Capacity
     #--------------------------------
-
     st.divider()
-    st.markdown("## Battery Simulation Results")
-    st.markdown("#### Finding the optimal battery capacity:")
+    st.markdown("#### Load Profile Status Quo:")
+
+    st.line_chart(load_profile, color=["#FEC240", "#1C754F", "#4E71EE"])
+
+    ### TO DO: improve load_profle chart
 
     # ADD: Load Profile with bar chart of monthly
-
     st.markdown("#### Finding the optimal battery capacity:")
     st.markdown("**Added Consumption from Battery per Battery Capacity**")
     # Create empty lists to hold the x and y values
@@ -336,20 +337,3 @@ if st.button("Start Simulation", type="primary"):
     st.bar_chart(df.set_index('Capacity')['Additional Profit'], color='#FEC240')
 
     st.markdown("**Customer Impact**")
-    st.bar_chart()
-    # Add graphs:
-        # autarkie for customer
-        # net impact battery for customer (savings from peak shaving + savings from delta ppa – grid price) show financials here
-
-    st.markdown("#### All Results:")
-    st.json(data)
-
-    # TBD: Load Profile
-        # durchschnitt unter der woche
-        # maximal werte pro stunde
-        # minimale werte pro Stunde
-
-
-    # PV Produktion + battery energy profile
-
-    # Laod Profile with peak shaving according to best battery capacity

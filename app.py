@@ -1,3 +1,4 @@
+from re import M
 import pandas as pd
 import json
 import utility
@@ -26,32 +27,27 @@ def calculate(parameters, solaredgeData):
     solaredgeData.columns = headers
     solaredgeData = utility.reduce_data(solaredgeData)
     solaredgeData[['pv_yield', 'consumption']] = solaredgeData[['pv_yield', 'consumption']] / 1000
+    solaredgeData['hour'] = solaredgeData.index.hour
 
     battery = parameters['battery']
     batterySizes = list(range(int(battery['capacity_start']), int(battery['capacity_end']) + 1, int(battery['capacity_step'])))
 
-    # Load profile df with index of tmstmp
-    load_profile = solaredgeData[['consumption']]
+    # Prepare Status Quo
+    mean_per_hour = solaredgeData.groupby('hour')['consumption'].mean()
+    max_per_hour = solaredgeData.groupby('hour')['consumption'].max()
+    min_per_hour = solaredgeData.groupby('hour')['consumption'].min()
 
-
-
-
-    '''
     statusQuoLoad = {
-        "mean" = # liste an duchschnittlichen loads pro stunde am tag
-        "min" = # minimaler load pro stunde am tag
-        "max" =
+        "mean": list(mean_per_hour),
+        "max": list(max_per_hour),
+        "min": list(min_per_hour)
     }
-
-    '''
-
 
 
     '''
     for each battery size calculate a self-sufficiency optimization, peak shaving and financials
     '''
     results = []
-    # results.append(statusQuoLoad)
 
     for batCap in batterySizes:
         '''
@@ -124,18 +120,29 @@ def calculate(parameters, solaredgeData):
         lostRevenue = (optimizedDF['conversionLoss'].sum() + optimizedDF['batteryOwnConsumption'].sum()) * parameters['power_prices']['feed_in_price']
         newPpaRevenue = optimizedDF['batteryOwnConsumption'].sum() * parameters['power_prices']['ppa_price']
 
-        # TODO: totalCost berechnen pro
-        #   ppa +
-        #   grid +
-        #   grid fee (power + consumption price) +
-        #   other fees
+        """
+        selfConsumption = optimizedDF['directOwnConsumption'].sum() + optimizedDF['batteryOwnConsumption'].sum()
+        gridConsumption = optimizedDF['consumption'] - selfConsumption
+        if newHours >= 2500:
+            consumptionPrice = parameters['grid_fees']['above_2500']['consumption_price']
+        else:
+            consumptionPrice = parameters['grid_fees']['below_2500']['consumption_price']
+
+
+        ppaCost =  selfConsumption * parameters['power_prices']['ppa_price']
+        gridCost = gridConsumption
+        gridFee = newPowerPrice + (selfConsumption * consumptionPrice)
+        otherFee = gridConsumption * parameters['grid_fees']['below_2500']['other_fees']
+
+        totalCost = ppaCost + gridCost + gridFee + otherFee
+        """
 
         financial = {
             "annualInterest": annualCost,
             "lostRevenue": lostRevenue,
             "newPpaRevenue": newPpaRevenue,
             "peakPriceSavings": peakPriceSavings
-            # "customerSavings":
+            #"totalCost": totalCost
         }
 
         # power metrics
@@ -159,4 +166,4 @@ def calculate(parameters, solaredgeData):
         results.append(result)
 
 
-    return results
+    return results, statusQuoLoad
